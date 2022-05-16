@@ -36,7 +36,7 @@ def open_h5_file_read(h5filename):
     Open an existing H5 in read mode.
     Same function as in hdf5_utils, here so we avoid one import
     """
-    return tables.openFile(h5filename, mode='r')
+    return tables.open_file(h5filename, mode='r')
 
 
 def get_num_songs(h5):
@@ -292,7 +292,7 @@ def get_segments_start(h5,songidx=0):
         return h5.root.analysis.segments_start[h5.root.analysis.songs.cols.idx_segments_start[songidx]:]
     return h5.root.analysis.segments_start[h5.root.analysis.songs.cols.idx_segments_start[songidx]:
                                            h5.root.analysis.songs.cols.idx_segments_start[songidx+1]]
-    
+
 def get_segments_confidence(h5,songidx=0):
     """
     Get segments confidence array. Takes care of the proper indexing if we are in aggregate
