@@ -4,10 +4,10 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 
-def fuzzySearchSongTitle(songTitle, data, threshold=80):
+def fuzzySearchSongTitle(songTitle, data, threshold=60):
     """
     Searches for a song title in the database.
-    Returns the analysis of the song matching th most above a certian threshold.
+    Returns the analysis of the song matching the most above a certian threshold.
     Threshold is from 0 to 100.
     """
     maxRatio = [0, 0]
@@ -39,5 +39,5 @@ if __name__ == '__main__':
     if (songAnalysis == None):
         print("Song not found within the threshold")
     else:
-        print("Found Song" + songAnalysis[50]) # b'Amor De Cabaret'
+        print("Found Song: " + songAnalysis[50]) # b'Amor De Cabaret'
 
