@@ -4,7 +4,7 @@ def key(key1, key2):
     '''
     This function takes two keys and returns the similarity between them.
     '''
-    return max(1-0.1*abs(int(key1) - int(key2)), 0)
+    return max(1-0.5*abs(int(key1) - int(key2)), 0)
 
 def tempo(tempo1, tempo2):
     '''
