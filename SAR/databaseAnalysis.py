@@ -1,15 +1,14 @@
 import pickle
-import csv
 
 if __name__=='__main__':
     with open('database.pickle', 'rb') as handle:
         database = pickle.load(handle)
 
-    cropped_getters = ['title', 'artist_name', 'duration', 'key', 'key_confidence', 'mode',
+    cropped_getters = ('title', 'artist_name', 'duration', 'key', 'key_confidence', 'mode',
                        'mode_confidence', 'tempo', 'loudness', 'time_signature', 
                        'time_signature_confidence', 'year', 'sections_start', 'segments_pitches', 
                        'segments_timbre', 'bars_start', 'bars_confidence', 'tatums_confidence', 
-                       'tatums_start']
+                       'tatums_start')
 
     i = 0
     # print dictionary in nice format
