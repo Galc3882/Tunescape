@@ -68,15 +68,16 @@ def cosineSimilarity(song1, song2):
     Returns the similarity value.
     """
     # Vector of weights for each feature
-    weights = [0, 0, 0.05, 2, 0, 1, 0, 1.5, 0.5, 1, 0, 0.05, 1, 1, 1, 1, 0, 0, 0.5]
+    weights = [0.02, 0.05, 0.5, 1, 0.65, 0.8, 0.5, 1, 0.4, 0.6, 0.3, 0.3, 0.3]
 
     # Calculate the dot product of the two songs
     similarities = []
-    for i in (2, 3, 5, 7, 8, 9, 11, 12, 13, 14, 15, 18):
-        similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i])
+    for i in (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14):
+        if i == 3:
+            similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i], song1[i+1], song2[i+1])
+        else:
+            similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i])
         if similarity is not None:
-            if similarity < 0.2:
-                return 0
             similarities.append(similarity)
         else:
             weights[i] = 0
@@ -85,8 +86,6 @@ def cosineSimilarity(song1, song2):
     return np.dot([i for i in weights if i != 0], similarities)/sum(weights)
 
 # take second element for sort
-
-
 def takeSecond(elem):
     return elem[1]
 
@@ -96,7 +95,7 @@ if __name__ == '__main__':
     with open('database.pickle', 'rb') as handle:
         database = pickle.load(handle)
 
-    # Ask for the song title
+    # Ask for the song title    
     songTitle = input("Enter the song title: ")
     songAnalysis = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
     if (songAnalysis == None):

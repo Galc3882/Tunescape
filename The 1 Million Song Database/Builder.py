@@ -11,25 +11,6 @@ def getFeatures(hdf5_file):
     Get features from an HDF5 file.
     """
 
-    h5 = hdf5_getters.open_h5_file_read(hdf5_file)
-
-    # Get the list of all the features
-    getters = list(
-        filter(lambda x: x[:4] == 'get_', hdf5_getters.__dict__.keys()))
-    getters.remove("get_num_songs")  # special case
-    getters = np.sort(getters)
-
-    values = []
-    # Iterate over all the features
-    for getter in getters:
-        try:
-            res = hdf5_getters.__getattribute__(getter)(h5, 0)
-            values.append(res)
-        except AttributeError:
-            print('forgot -summary flag? specified wrong getter?')
-
-    h5.close()
-
     """ 
     ['get_analysis_sample_rate', 'get_artist_7digitalid',
        'get_artist_familiarity', 'get_artist_hotttnesss', 'get_artist_id',
@@ -52,23 +33,27 @@ def getFeatures(hdf5_file):
        'get_time_signature', 'get_time_signature_confidence', 'get_title',
        'get_track_7digitalid', 'get_track_id', 'get_year']
     """
-    cropped_getters = ['title', 'artist_name', 'duration', 'key', 'key_confidence', 'mode',
-                       'mode_confidence', 'tempo', 'loudness', 'time_signature', 
-                       'time_signature_confidence', 'year', 'sections_start', 'segments_pitches', 
-                       'segments_timbre', 'bars_start', 'bars_confidence', 'tatums_confidence', 
-                       'tatums_start']
+
+    cropped_getters = ('get_title', 'get_artist_name', 'get_duration', 'get_key', 
+                       'get_mode', 'get_tempo', 'get_loudness', 'get_time_signature', 
+                       'get_year', 'get_sections_start', 'get_segments_pitches', 
+                       'get_segments_timbre', 'get_bars_start', 'get_beats_start',
+                       'get_tatums_start')
+
+    
+    h5 = hdf5_getters.open_h5_file_read(hdf5_file)
 
     # Create a dataframe with the features
     cropped_values = []
     for getter in cropped_getters:
-        # index[0] gives all locations (in an array)
-        index = np.where(getters == "get_" + getter)
+        res = hdf5_getters.__getattribute__(getter)(h5, 0)
 
         # if type is bytes, convert to string
-        if type(values[index[0][0]]) == np.bytes_:
-            cropped_values.append(values[index[0][0]].decode('utf-8'))
+        if type(res) == np.bytes_:
+            cropped_values.append(res.decode('utf-8'))
         else:
-            cropped_values.append(values[index[0][0]])
+            cropped_values.append(res)
+    h5.close()
 
     return tuple(cropped_values)
 
