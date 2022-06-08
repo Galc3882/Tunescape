@@ -79,7 +79,7 @@ def nb_cosine(x, y):
         xy+=x[i]*y[i]
     if xx*yy == 0:
         return 0
-    return 1.0-xy/np.sqrt(xx*yy)
+    return xy/np.sqrt(xx*yy)
         
 def key(key1, key2, mode1, mode2):
     '''
@@ -92,8 +92,10 @@ def tempo(tempo1, tempo2):
     '''
     This function takes two tempos and returns the similarity between them.
     '''
+    if tempo1 == tempo2:
+        return 1
     # sigmoid
-    return 1 / (1 + math.exp(-max(1-0.01*abs(float(tempo1) - float(tempo2)), 0)))
+    return 1 / (1 + math.exp(-7*(max(1-0.01*abs(float(tempo1) - float(tempo2)), 0)-0.5)))
 
 
 def loudness(loudness1, loudness2):
@@ -162,7 +164,7 @@ def segments_pitches(segments_pitches1, segments_pitches2):
         segments_pitches2 = cv2.resize(segments_pitches2, dsize=(12, len(segments_pitches1)), interpolation=cv2.INTER_NEAREST)
 
     # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-max(1-0.005*abs(np.linalg.norm(segments_pitches1-segments_pitches2)), 0)))
+    return 1 / (1 + math.exp(-5*(max(1-0.01*np.linalg.norm(segments_pitches1-segments_pitches2), 0)-0.5)))
 
 
 def segments_timbre(segments_timbre1, segments_timbre2):
@@ -176,7 +178,7 @@ def segments_timbre(segments_timbre1, segments_timbre2):
         segments_timbre2 = cv2.resize(segments_timbre2, dsize=(12, len(segments_timbre1)), interpolation=cv2.INTER_NEAREST)
 
     # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-max(1-0.005*abs(np.linalg.norm(segments_timbre1-segments_timbre2)), 0)))
+    return 1 / (1 + math.exp(-5*(max(1-0.01*np.linalg.norm(segments_timbre1-segments_timbre2), 0)-0.5)))
 
 
 def bars_start(bars_start1, bars_start2):

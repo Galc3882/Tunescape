@@ -85,6 +85,8 @@ def cosineSimilarity(song1, song2):
         else:
             similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i])
         if similarity is not None:
+            if i == 9 and np.sum(similarities) < 3:
+                return 0
             similarities[j] = similarity
         else:
             weights[i] = 0
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         database = pickle.load(handle)
 
     # Ask for the song title    
-    songTitle = "firework" #input("Enter the song title: ")
+    songTitle = input("Enter the song title: ")
     # Find the song in the database
     songKey = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
     if songKey is None:
