@@ -15,8 +15,11 @@ if __name__=='__main__':
     # print dictionary in nice format
     for x in database.items():
         # print confidence average
-        if x[1][11] < j and not x[1][11] == 0:
-            j = x[1][11]
+        if x[1][10].shape[0] < j and x[1][10].shape[0] > 0:
+            j = x[1][10].shape[0]
+            print(x[1][0])
+            print(x[1][10].shape[0])
+            
         # if i<1:
         #     # print('Song: ' + x[1][0])
         #     # print('Band: ' + x[1][1])

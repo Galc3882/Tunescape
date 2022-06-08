@@ -32,6 +32,9 @@ def findSimilarSongs(song, data, numOfSongs=1):
     # measure the time it takes to find the most similar songs
     starttime = time.time()
     i=0
+
+
+    data.pop(song[0] + '\0' + song[1])
     
     # Calculate the cosine similarity between the song and all the songs in the database
     similarSongs = []
@@ -39,23 +42,22 @@ def findSimilarSongs(song, data, numOfSongs=1):
 
         # every 500 songs, print the time it took to find the most similar songs
         if i % 500 == 0:
-            print("Songs processed: " + str(i) + "\t|\t " + str(int(i*100/len(data))) + "%\t|\t Time: {:.2f}".format(time.time() - starttime))
+            pass
+            #print("Songs processed: " + str(i) + "\t|\t " + str(int(i*100/len(data))) + "%\t|\t Time: {:.2f}".format(time.time() - starttime))
         i += 1
 
-        if row[0] != song:
-
-            # Add the song to the list of songs if cosine similarity is above numOfSongs lowest similarity and delete the lowest similarity
-            cosSim = cosineSimilarity(data[song], row[1])
-            if cosSim < 0.4:
-                continue
-            if len(similarSongs) < numOfSongs:
+        # Add the song to the list of songs if cosine similarity is above numOfSongs lowest similarity and delete the lowest similarity
+        cosSim = cosineSimilarity(song, row[1])
+        if cosSim < 0.4:
+            continue
+        if len(similarSongs) < numOfSongs:
+            similarSongs.append((row[0], cosSim))
+        else:
+            iMin = similarSongs.index(min(similarSongs, key=takeSecond))
+            if cosSim > similarSongs[iMin][1]:
                 similarSongs.append((row[0], cosSim))
-            else:
-                iMin = similarSongs.index(min(similarSongs, key=takeSecond))
-                if cosSim > similarSongs[iMin][1]:
-                    similarSongs.append((row[0], cosSim))
-                    if len(similarSongs) > numOfSongs:
-                        similarSongs.pop(iMin)
+                if len(similarSongs) > numOfSongs:
+                    similarSongs.pop(iMin)
 
     print('That took {:.2f} seconds'.format(time.time() - starttime))
 
@@ -67,27 +69,43 @@ def cosineSimilarity(song1, song2):
     Calculates the cosine similarity between two songs.
     Returns the similarity value.
     """
+    
+    if song1[4] != song2[4]:
+        return 0
+
     # Vector of weights for each feature
-    weights = [0.02, 0.05, 0.5, 1, 0.65, 0.8, 0.5, 1, 0.4, 0.6, 0.3, 0.3, 0.3]
+    weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.8, 0.5, 1, 0.4, 0.6, 0.3, 0.3, 0.3])
 
     # Calculate the dot product of the two songs
-    similarities = []
+    similarities = np.array([0.0]*weights.size)
+    j = 0
     for i in (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14):
         if i == 3:
             similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i], song1[i+1], song2[i+1])
         else:
             similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i])
         if similarity is not None:
-            similarities.append(similarity)
+            similarities[j] = similarity
         else:
             weights[i] = 0
+        j+=1
 
     # Return dot product of weights and similarities
-    return np.dot([i for i in weights if i != 0], similarities)/sum(weights)
+    return np.dot(weights, similarities)/np.sum(weights)
 
 # take second element for sort
 def takeSecond(elem):
     return elem[1]
+
+def main(database, songKey):
+    # Find most similar song using cosine similarity
+    similarSongs = findSimilarSongs(database[songKey], database, 5)
+    sortedSimilarSongs = sorted(similarSongs, key=takeSecond, reverse=True)
+    print("Similar Songs: ")
+    for i in range(len(sortedSimilarSongs)):
+        print("Found Song: " + sortedSimilarSongs[i][0].split('\0')
+            [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
+        print("Cosine Similarity: " + str(sortedSimilarSongs[i][1]))
 
 
 if __name__ == '__main__':
@@ -96,19 +114,12 @@ if __name__ == '__main__':
         database = pickle.load(handle)
 
     # Ask for the song title    
-    songTitle = input("Enter the song title: ")
-    songAnalysis = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
-    if (songAnalysis == None):
+    songTitle = "firework" #input("Enter the song title: ")
+    # Find the song in the database
+    songKey = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
+    if songKey is None:
         print("Song not found within the threshold")
     else:
-        print("Found Song: " + songAnalysis.split('\0')
-              [0]+" by " + songAnalysis.split('\0')[1])
-
-        # Find most similar song using cosine similarity
-        similarSongs = findSimilarSongs(songAnalysis, database, 5)
-        sortedSimilarSongs = sorted(similarSongs, key=takeSecond, reverse=True)
-        print("Similar Songs: ")
-        for i in range(len(sortedSimilarSongs)):
-            print("Found Song: " + sortedSimilarSongs[i][0].split('\0')
-              [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
-            print("Cosine Similarity: " + str(sortedSimilarSongs[i][1]))
+        print("Found Song: " + songKey.split('\0')
+              [0]+" by " + songKey.split('\0')[1])
+    main(database, songKey)
