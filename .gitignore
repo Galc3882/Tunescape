@@ -2,3 +2,4 @@
 *.pickle
 *.ipynb
 .vscode
+*.pyc

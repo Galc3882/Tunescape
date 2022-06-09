@@ -12,12 +12,22 @@ def fuzzyGetSongTitle(songTitle, data, threshold=60):
     Threshold is from 0 to 100.
     """
 
-    ratio = process.extract(songTitle.lower(), list(data), limit=1)
-    if ratio[0][1] > threshold:
-        print("Similarity: " + str(ratio[0][1]))
-        return ratio[0][0]
-    else:
+    ratio = process.extract(songTitle.lower(), list(data), limit=10)
+    i = 0
+    while i < len(ratio):
+        if ratio[i][1] < threshold:
+            ratio.pop(i)
+        else:
+            i += 1
+    if len(ratio) == 0:
         return None
+    elif len(ratio) > 1:
+        print("Multiple songs found:")
+        for j in range(len(ratio)):
+            print(str(j+1)+". "+ratio[j][0].split('\0')[0]+" by " + ratio[j][0].split('\0')[1])
+        k = input("Please enter the number of the song you want to use: ")
+        return ratio[int(k)-1][0]
+    return ratio[0][0]
 
 
 def findSimilarSongs(song, data, numOfSongs=1):
@@ -31,11 +41,10 @@ def findSimilarSongs(song, data, numOfSongs=1):
 
     # measure the time it takes to find the most similar songs
     starttime = time.time()
-    i=0
-
+    i = 0
 
     data.pop(song[0] + '\0' + song[1])
-    
+
     # Calculate the cosine similarity between the song and all the songs in the database
     similarSongs = []
     for row in data.items():
@@ -69,35 +78,40 @@ def cosineSimilarity(song1, song2):
     Calculates the cosine similarity between two songs.
     Returns the similarity value.
     """
-    
+
     if song1[4] != song2[4]:
         return 0
 
     # Vector of weights for each feature
-    weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.8, 0.5, 1, 0.4, 0.6, 0.3, 0.3, 0.3])
+    weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.8, 0.5, 0.8, 0.2, 0.3, 0.15, 0.15, 0.15])
 
     # Calculate the dot product of the two songs
     similarities = np.array([0.0]*weights.size)
     j = 0
     for i in (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14):
         if i == 3:
-            similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i], song1[i+1], song2[i+1])
+            similarity = FeatureSimilarity.methodDictionary[i](
+                song1[i], song2[i], song1[i+1], song2[i+1])
         else:
-            similarity = FeatureSimilarity.methodDictionary[i](song1[i], song2[i])
+            similarity = FeatureSimilarity.methodDictionary[i](
+                song1[i], song2[i])
         if similarity is not None:
             if i == 9 and np.sum(similarities) < 3:
                 return 0
             similarities[j] = similarity
         else:
             weights[i] = 0
-        j+=1
+        j += 1
 
     # Return dot product of weights and similarities
     return np.dot(weights, similarities)/np.sum(weights)
 
 # take second element for sort
+
+
 def takeSecond(elem):
     return elem[1]
+
 
 def main(database, songKey):
     # Find most similar song using cosine similarity
@@ -106,7 +120,7 @@ def main(database, songKey):
     print("Similar Songs: ")
     for i in range(len(sortedSimilarSongs)):
         print("Found Song: " + sortedSimilarSongs[i][0].split('\0')
-            [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
+              [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
         print("Cosine Similarity: " + str(sortedSimilarSongs[i][1]))
 
 
@@ -115,10 +129,10 @@ if __name__ == '__main__':
     with open('database.pickle', 'rb') as handle:
         database = pickle.load(handle)
 
-    # Ask for the song title    
+    # Ask for the song title
     songTitle = input("Enter the song title: ")
     # Find the song in the database
-    songKey = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
+    songKey = fuzzyGetSongTitle(songTitle, database.keys(), threshold=40)
     if songKey is None:
         print("Song not found within the threshold")
     else:
