@@ -79,7 +79,7 @@ def tempo(tempo1, tempo2):
     if tempo1 == tempo2:
         return 1
     # sigmoid
-    return 1 / (1 + math.exp(-7*(max(1-0.01*abs(float(tempo1) - float(tempo2)), 0)-0.5)))
+    return 1 / (1 + math.exp(-7*(max(1-0.05*abs(float(tempo1) - float(tempo2)), 0)-0.5)))
 
 
 def loudness(loudness1, loudness2):
@@ -105,7 +105,7 @@ def year(year1, year2):
     '''
     if year1 == 0 or year2 == 0:
         return None
-    return max(1-0.05*abs(int(year1) - int(year2)), 0)
+    return max(1-0.1*abs(int(year1) - int(year2)), 0)
 
 
 def duration(duration1, duration2):
