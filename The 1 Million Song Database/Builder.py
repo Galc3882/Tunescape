@@ -4,6 +4,7 @@ import hdf5_getters
 import multiprocessing as mp
 import time
 import pickle
+import cv2
 
 
 def getFeatures(hdf5_file):
@@ -47,6 +48,11 @@ def getFeatures(hdf5_file):
     cropped_values = []
     for getter in cropped_getters:
         res = hdf5_getters.__getattribute__(getter)(h5, 0)
+
+        if getter == 'get_segments_pitches' or getter == 'get_segments_timbre':
+            if len(res) > 128:
+                res = cv2.resize(res, dsize=(12, 128), interpolation=cv2.INTER_CUBIC)
+
 
         # if type is bytes, convert to string
         if type(res) == np.bytes_:
