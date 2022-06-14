@@ -52,6 +52,9 @@ def getFeatures(hdf5_file):
         if getter == 'get_segments_pitches' or getter == 'get_segments_timbre':
             if len(res) > 128:
                 res = cv2.resize(res, dsize=(12, 128), interpolation=cv2.INTER_CUBIC)
+        elif getter == 'get_sections_start' or getter == 'get_bars_start' or getter == 'get_beats_start' or getter == 'get_tatums_start':
+            if len(res) > 128:
+                res = np.resize(res, 128)
 
 
         # if type is bytes, convert to string
