@@ -72,14 +72,14 @@ def key(key1, key2, mode1, mode2):
         return maj_min[key1 - key2]
 
 
-def tempo(tempo1, tempo2):
+def speed(tempo1, tempo2, time_signature1, time_signature2):
     '''
     This function takes two tempos and returns the similarity between them.
     '''
-    if tempo1 == tempo2:
+    if tempo1 == tempo2 and time_signature1 == time_signature2:
         return 1
     # sigmoid
-    return 1 / (1 + math.exp(-7*(max(1-0.05*abs(float(tempo1) - float(tempo2)), 0)-0.5)))
+    return 1 / (1 + math.exp(-7*(max(1-0.01*abs(float(tempo1)/float(time_signature1) - float(tempo2)/float(time_signature2)), 0)-0.5)))
 
 
 def loudness(loudness1, loudness2):
@@ -210,7 +210,7 @@ def artist_name(artist_name1, artist_name2):
 
 
 # A dictionary of the similarity functions
-methodDictionary = {1: artist_name, 2: duration, 3: key, 5: tempo, 6: loudness, 7: time_signature, 8: year,
+methodDictionary = {1: artist_name, 2: duration, 3: key, 5: speed, 6: loudness, 8: year,
                     9: sections_start, 10: segments_pitches, 11: segments_timbre, 12: bars_start,
                     13: beats_start, 14: tatums_start}
 

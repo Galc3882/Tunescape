@@ -79,24 +79,24 @@ def cosineSimilarity(song1, song2):
     Returns the similarity value.
     """
 
-    if song1[4] != song2[4]:
-        return 0
-
     # Vector of weights for each feature
-    weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.8, 0.5, 0.8, 0.2, 0.3, 0.15, 0.15, 0.15])
+    weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.5, 0.8, 0.2, 0.3, 0.15, 0.15, 0.15])
 
     # Calculate the dot product of the two songs
     similarities = np.array([0.0]*weights.size)
     j = 0
-    for i in (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14):
+    for i in (1, 2, 3, 5, 6, 8, 9, 10, 11, 12, 13, 14):
         if i == 3:
             similarity = FeatureSimilarity.methodDictionary[i](
                 song1[i], song2[i], song1[i+1], song2[i+1])
+        elif i == 5:
+            similarity = FeatureSimilarity.methodDictionary[i](
+                song1[i], song2[i], song1[i+2], song2[i+2])
         else:
             similarity = FeatureSimilarity.methodDictionary[i](
                 song1[i], song2[i])
         if similarity is not None:
-            if i == 9 and np.sum(similarities) < 3:
+            if i == 9 and np.sum(similarities) < 2:
                 return 0
             similarities[j] = similarity
         else:

@@ -98,6 +98,11 @@ if __name__ == '__main__':
     pool.close()
     print('That took {:.2f} seconds'.format(time.time() - starttime))
     
+    # remove songs with no features
+    database.pop('Black Market Hell\0Aiden')
+    database.pop('Genuine\0Five Fingers of Funk')
+    database.pop('bereit\0Panzer AG')
+
     # save the database to a pickle file
     starttime = time.time()
     with open('database.pickle', 'wb') as handle:
