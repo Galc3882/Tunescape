@@ -6,9 +6,13 @@ import numba as nb
 import numpy as np
 
 
-same_mode = (1, 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 0, 0.8333, 0.6667, 0.5, 0.3333, 0.16667)
-min_maj = (0.4286, 0.5714, 0.1429, 0.8571, 0.1429, 0.5714, 0.4286, 0.2857, 0.7143, 0, 0.7143, 0.2857)
-maj_min = (0.4286, 0.2857, 0.7143, 0, 0.7143, 0.2857, 0.4286, 0.5714, 0.1429, 0.8571, 0.1429, 0.5714)
+same_mode = (1, 0.1667, 0.3333, 0.5, 0.6667, 0.8333,
+             0, 0.8333, 0.6667, 0.5, 0.3333, 0.16667)
+min_maj = (0.4286, 0.5714, 0.1429, 0.8571, 0.1429, 0.5714,
+           0.4286, 0.2857, 0.7143, 0, 0.7143, 0.2857)
+maj_min = (0.4286, 0.2857, 0.7143, 0, 0.7143, 0.2857,
+           0.4286, 0.5714, 0.1429, 0.8571, 0.1429, 0.5714)
+
 
 def equalizeDim(l1, l2):
     '''
@@ -27,7 +31,7 @@ def equalizeDim(l1, l2):
                 i += 1
             else:
                 i += 1
-                
+
             if i == len(l2):
                 l2 = l2 + [0]*(len(l1)-len(l2))
                 break
@@ -39,7 +43,7 @@ def equalizeDim(l1, l2):
                 i += 1
             else:
                 i += 1
-            
+
             if i == len(l1):
                 l1 = l1 + [0]*(len(l2)-len(l1))
                 break
@@ -48,15 +52,19 @@ def equalizeDim(l1, l2):
 
 @nb.jit(nopython=True, fastmath=True)
 def nb_cosine(x, y):
-    xx,yy,xy=0.0,0.0,0.0
-    for i in range(len(x)):
-        xx+=x[i]*x[i]
-        yy+=y[i]*y[i]
-        xy+=x[i]*y[i]
-    if xx*yy == 0:
-        return 0
-    return xy/np.sqrt(xx*yy)
-        
+    m = max(np.max(x), np.max(y)) - min(np.min(x), np.min(y))
+    print(abs(np.sum((x/len(x)*m)-(y/len(x)*m))))
+    return max(1-0.01*abs(np.sum((x/len(x)*m)-(y/len(x)*m))), 0)
+    # xx, yy, xy = 0.0, 0.0, 0.0
+    # for i in range(len(x)):
+    #     xx += x[i]*x[i]
+    #     yy += y[i]*y[i]
+    #     xy += x[i]*y[i]
+    # if xx*yy == 0:
+    #     return 0
+    # return xy/np.sqrt(xx*yy)
+
+
 def key(key1, key2, mode1, mode2):
     '''
     This function takes two keys and returns the similarity between them.
@@ -79,14 +87,14 @@ def speed(tempo1, tempo2, time_signature1, time_signature2):
     if tempo1 == tempo2 and time_signature1 == time_signature2:
         return 1
     # sigmoid
-    return 1 / (1 + math.exp(-7*(max(1-0.01*abs(float(tempo1)/float(time_signature1) - float(tempo2)/float(time_signature2)), 0)-0.5)))
+    return 1 / (1 + math.exp(-7*(max(1-0.03*abs(float(tempo1)/float(time_signature1) - float(tempo2)/float(time_signature2)), 0)-0.5)))
 
 
 def loudness(loudness1, loudness2):
     '''
     This function takes two loudnesses and returns the similarity between them.
     '''
-    return max(1-0.1*abs(loudness1 - loudness2), 0)
+    return max(1-0.4*abs(loudness1 - loudness2), 0)
 
 
 def time_signature(time_signature1, time_signature2):
@@ -112,7 +120,7 @@ def duration(duration1, duration2):
     '''
     This function takes two durations and returns the similarity between them.
     '''
-    return max(1-0.02*abs(duration1 - duration2), 0)
+    return max(1-0.01*abs(duration1 - duration2), 0)
 
 
 def mode(mode1, mode2):
@@ -129,10 +137,12 @@ def sections_start(sections_start1, sections_start2):
     '''
     This function takes two sections starts and returns the similarity between them.
     '''
+    if len(sections_start1) == 0 or len(sections_start2) == 0:
+        return 0
     if len(sections_start1) > len(sections_start2):
-        sections_start1 = np.resize(sections_start1, len(sections_start2))
+        sections_start1 = np.array([i.item() for i in cv2.resize(sections_start1, dsize=(1, len(sections_start2)), interpolation=cv2.INTER_NEAREST)])
     elif len(sections_start2) > len(sections_start1):
-        sections_start2 = np.resize(sections_start2, len(sections_start1))
+        sections_start2 = np.array([i.item() for i in cv2.resize(sections_start2, dsize=(1, len(sections_start1)), interpolation=cv2.INTER_NEAREST)])
 
     return nb_cosine(sections_start1, sections_start2)
 
@@ -143,36 +153,46 @@ def segments_pitches(segments_pitches1, segments_pitches2):
     '''
     # reshape matricies to smallest one
     if len(segments_pitches1) > len(segments_pitches2):
-        segments_pitches1 = cv2.resize(segments_pitches1, dsize=(12, len(segments_pitches2)), interpolation=cv2.INTER_NEAREST)
+        segments_pitches1 = cv2.resize(segments_pitches1, dsize=(
+            12, len(segments_pitches2)), interpolation=cv2.INTER_NEAREST)
     elif len(segments_pitches2) > len(segments_pitches1):
-        segments_pitches2 = cv2.resize(segments_pitches2, dsize=(12, len(segments_pitches1)), interpolation=cv2.INTER_NEAREST)
+        segments_pitches2 = cv2.resize(segments_pitches2, dsize=(
+            12, len(segments_pitches1)), interpolation=cv2.INTER_NEAREST)
+
+    m = max(np.max(segments_pitches1), np.max(segments_pitches2)) - min(np.min(segments_pitches1), np.min(segments_pitches2))
 
     # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-5*(max(1-0.01*np.linalg.norm(segments_pitches1-segments_pitches2), 0)-0.5)))
+    return 1 / (1 + math.exp(-7.5*(max(1-np.linalg.norm(segments_pitches1 - segments_pitches2)/len(segments_pitches1)*m, 0)-0.5)))
 
 
 def segments_timbre(segments_timbre1, segments_timbre2):
     '''
     This function takes two segments timbre and returns the similarity between them.
     '''
-    # reshape matricies to smallest one 
+    # reshape matricies to smallest one
     if len(segments_timbre1) > len(segments_timbre2):
-        segments_timbre1 = cv2.resize(segments_timbre1, dsize=(12, len(segments_timbre2)), interpolation=cv2.INTER_NEAREST)
+        segments_timbre1 = cv2.resize(segments_timbre1, dsize=(
+            12, len(segments_timbre2)), interpolation=cv2.INTER_NEAREST)
     elif len(segments_timbre2) > len(segments_timbre1):
-        segments_timbre2 = cv2.resize(segments_timbre2, dsize=(12, len(segments_timbre1)), interpolation=cv2.INTER_NEAREST)
+        segments_timbre2 = cv2.resize(segments_timbre2, dsize=(
+            12, len(segments_timbre1)), interpolation=cv2.INTER_NEAREST)
+
+    m = max(np.max(segments_timbre1), np.max(segments_timbre2)) - min(np.min(segments_timbre1), np.min(segments_timbre2))
 
     # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-5*(max(1-0.01*np.linalg.norm(segments_timbre1-segments_timbre2), 0)-0.5)))
+    return 1 / (1 + math.exp(-7.5*(max(1-0.0001*np.linalg.norm(segments_timbre1 - segments_timbre2)/len(segments_timbre1)*m, 0)-0.5)))
 
 
 def bars_start(bars_start1, bars_start2):
     '''
     This function takes two bars starts and returns the similarity between them.
     '''
+    if len(bars_start1) == 0 or len(bars_start2) == 0:
+        return 0
     if len(bars_start1) > len(bars_start2):
-        bars_start1 = np.resize(bars_start1, len(bars_start2))
+        bars_start1 = np.array([i.item() for i in cv2.resize(bars_start1, dsize=(1, len(bars_start2)), interpolation=cv2.INTER_NEAREST)])
     elif len(bars_start2) > len(bars_start1):
-        bars_start2 = np.resize(bars_start2, len(bars_start1))
+        bars_start2 = np.array([i.item() for i in cv2.resize(bars_start2, dsize=(1, len(bars_start1)), interpolation=cv2.INTER_NEAREST)])
 
     return nb_cosine(bars_start1, bars_start2)
 
@@ -181,23 +201,29 @@ def tatums_start(tatums_start1, tatums_start2):
     '''
     This function takes two tatums starts and returns the similarity between them.
     '''
+    if len(tatums_start1) == 0 or len(tatums_start2) == 0:
+        return 0
     if len(tatums_start1) > len(tatums_start2):
-        tatums_start1 = np.resize(tatums_start1, len(tatums_start2))
+        tatums_start1 = np.array([i.item() for i in cv2.resize(tatums_start1, dsize=(1, len(tatums_start2)), interpolation=cv2.INTER_NEAREST)])
     elif len(tatums_start2) > len(tatums_start1):
-        tatums_start2 = np.resize(tatums_start2, len(tatums_start1))
-    
+        tatums_start2 = np.array([i.item() for i in cv2.resize(tatums_start2, dsize=(1, len(tatums_start1)), interpolation=cv2.INTER_NEAREST)])
+
     return nb_cosine(tatums_start1, tatums_start2)
+
 
 def beats_start(beats_start1, beats_start2):
     '''
     This function takes two beats starts and returns the similarity between them.
     '''
+    if len(beats_start1) == 0 or len(beats_start2) == 0:
+        return 0
     if len(beats_start1) > len(beats_start2):
-        beats_start1 = np.resize(beats_start1, len(beats_start2))
+        beats_start1 = np.array([i.item() for i in cv2.resize(beats_start1, dsize=(1, len(beats_start2)), interpolation=cv2.INTER_NEAREST)])
     elif len(beats_start2) > len(beats_start1):
-        beats_start2 = np.resize(beats_start2, len(beats_start1))
-    
+        beats_start2 = np.array([i.item() for i in cv2.resize(beats_start2, dsize=(1, len(beats_start1)), interpolation=cv2.INTER_NEAREST)])
+
     return nb_cosine(beats_start1, beats_start2)
+
 
 def artist_name(artist_name1, artist_name2):
     '''
@@ -217,9 +243,9 @@ methodDictionary = {1: artist_name, 2: duration, 3: key, 5: speed, 6: loudness, 
 # ('get_title', 'get_artist_name', 'get_duration', 'get_key',
 #   0               1                 2                 3
 #  'get_mode', 'get_tempo', 'get_loudness', 'get_time_signature',
-#   4               5                 6                 7 
-#  'get_year', 'get_sections_start', 'get_segments_pitches', 
-#   8               9                 10                
+#   4               5                 6                 7
+#  'get_year', 'get_sections_start', 'get_segments_pitches',
+#   8               9                 10
 #  'get_segments_timbre', 'get_bars_start', 'get_beats_start',
 #   11                                12                13
 #  'get_tatums_start')
