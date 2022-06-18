@@ -64,7 +64,7 @@ def cosineSimilarity(song1, song2):
 
     # Vector of weights for each feature
     weights = np.array([0.02, 0.05, 1, 1, 0.65, 0.5,
-                       0.8, 0.2, 0.3, 0.15, 0.15, 0.15])
+                       0.8, 0.2, 0.65, 0.15, 0.15, 0.15])
 
     # Calculate the dot product of the two songs
     similarities = np.array([0.0]*weights.size)
