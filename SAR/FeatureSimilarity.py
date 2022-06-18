@@ -53,7 +53,6 @@ def equalizeDim(l1, l2):
 @nb.jit(nopython=True, fastmath=True)
 def nb_cosine(x, y):
     m = max(np.max(x), np.max(y)) - min(np.min(x), np.min(y))
-    print(abs(np.sum((x/len(x)*m)-(y/len(x)*m))))
     return max(1-0.01*abs(np.sum((x/len(x)*m)-(y/len(x)*m))), 0)
     # xx, yy, xy = 0.0, 0.0, 0.0
     # for i in range(len(x)):
