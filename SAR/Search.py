@@ -84,7 +84,7 @@ def cosineSimilarity(song1, song2):
                 return 0
             similarities[j] = similarity
         else:
-            weights[i] = 0
+            weights[j] = 0
         j += 1
 
     # Return dot product of weights and similarities

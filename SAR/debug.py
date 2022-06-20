@@ -53,7 +53,7 @@ def printValues(values):
     print('Loudness: ' + str(values[6]))
     print('Time signature: ' + str(values[7]))
     print('Year: ' + str(values[8]))
-    print('\n')
+    print()
 
 def compareValues(values1, values2):
     '''

@@ -36,8 +36,8 @@ def main2():
     with open('database.pickle', 'rb') as handle:
         database = pickle.load(handle)
 
-    songKey1 = "Mystic River\0Blue Rodeo"
-    songKey2 = "Stir The Gift\0Deitrick Haddon"
+    songKey1 = "Sympathy\0Thomas Battenstein"
+    songKey2 = "Levallois Monte Carlo\u0000Georges Parys"
 
     debug.compareSongs(database[songKey1], database[songKey2])
 

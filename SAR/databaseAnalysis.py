@@ -1,16 +1,8 @@
-import pickle
+
 
 if __name__=='__main__':
-    with open('database.pickle', 'rb') as handle:
-        database = pickle.load(handle)
-
-
-    # l = list(database.keys())
-    # for i in range(4000):
-    #     database.pop(l[i])
-
-    # with open('database_6000.pickle', 'wb') as handle:
-    #     pickle.dump(database, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    pass
+    
 
 
     # with open('songs.txt', 'w') as f:
