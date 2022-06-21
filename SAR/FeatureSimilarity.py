@@ -119,7 +119,7 @@ def duration(duration1, duration2):
     '''
     This function takes two durations and returns the similarity between them.
     '''
-    return max(1-0.01*abs(duration1 - duration2), 0)
+    return max(1-0.005*abs(duration1 - duration2), 0)
 
 
 def mode(mode1, mode2):

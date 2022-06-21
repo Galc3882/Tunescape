@@ -7,36 +7,71 @@ import pstats
 from pstats import SortKey
 from matplotlib import pyplot as plt
 import numpy as np
+import os
+import gc
 
-def fuzzyGetSongTitle(songTitle, data, threshold=60):
-    """
-    Searches for a song title in the database.
-    Returns the analysis of the song matching the most above a certian threshold.
-    Threshold is from 0 to 100.
-    """
+def main(songValue, pathList):
+     # Find most similar song using cosine similarity
+    numOfSongs = 5
+    similarSongs = Search.multiProcessing(
+        Search.findSimilarSongs, 32, songValue, pathList, numOfSongs)
 
-    ratio = process.extract(songTitle.lower(), list(data), limit=1)
-    if ratio[0][1] > threshold:
-        print("Similarity: " + str(ratio[0][1]))
-        return ratio[0][0]
-    else:
-        return None
+    # Sort the list by the similarity score
+    sortedSimilarSongs = sorted(
+        similarSongs, key=Search.takeSecond, reverse=True)
+    if len(sortedSimilarSongs) > numOfSongs:
+        sortedSimilarSongs = sortedSimilarSongs[:numOfSongs]
+
+    print("Similar Songs: ")
+    for i in range(len(sortedSimilarSongs)):
+        print("Found Song: " + sortedSimilarSongs[i][0].split('\0')
+              [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
+        print("Cosine Similarity: " + str(sortedSimilarSongs[i][1]))
 
 def preformanceTest():
-    # Read from the pickle file
-    with open('database.pickle', 'rb') as handle:
-        database = pickle.load(handle)
+    # Ask for the song title
+    songTitle = input("Enter the song title: ")
 
-    # Ask for the song title    
-    songTitle = "firework" #input("Enter the song title: ")
     # Find the song in the database
-    songKey = fuzzyGetSongTitle(songTitle, database.keys(), threshold=10)
-    if songKey is None:
-        print("Song not found within the threshold")
+    songKey = Search.fuzzyGetSongTitle(songTitle, os.path.abspath(os.getcwd()) + r'\tmp\namelist.pickle', 40)
+
+    if len(songKey) > 1:
+        print("Multiple songs found:")
+        for j in range(len(songKey)):
+            print(str(j+1)+". "+songKey[j][0].split('\0')
+                  [0]+" by " + songKey[j][0].split('\0')[1])
+        k = input("Please enter the number of the song you want to use: ")
+        songKey = songKey[int(k)-1][0]
     else:
-        print("Found Song: " + songKey.split('\0')
-                [0]+" by " + songKey.split('\0')[1])
-    cProfile.run('Search.main(database, songKey)', sort='tottime', filename='profile.txt')
+        songKey = songKey[0][0]
+    print("Found Song: " + songKey.split('\0')
+          [0]+" by " + songKey.split('\0')[1])
+
+    root = os.path.abspath(os.getcwd()) + r'\tmp'
+    pathList = []
+    for path, subdirs, files in os.walk(root):
+        for name in files:
+            if not name.startswith("namelist"):
+                pathList.append(os.path.join(path, name))
+
+    songValue = None
+    # Find song value in the database
+    for path in pathList:
+        with open(path, 'rb') as handle:
+            data = pickle.load(handle)
+            handle.close()
+            if songKey in data.keys():
+                songValue = data[songKey]
+                break
+        del data
+        gc.collect()
+    if len(pathList) > 0:
+        del data
+        gc.collect()
+    if songValue == None:
+        pass  # ! Error: Song not found
+
+    cProfile.runctx('main(songValue, pathList)', {'songValue': songValue, 'pathList': pathList, 'main': main}, {}, sort='tottime', filename='profile.txt')
     p = pstats.Stats('profile.txt')
     p.sort_stats(SortKey.TIME, SortKey.CUMULATIVE).print_stats(100)
 
@@ -111,3 +146,6 @@ def compareSongs(values1, values2):
     compareValues(values1, values2)
     
     plt.show()
+
+if __name__ == '__main__':
+    preformanceTest()

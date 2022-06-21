@@ -77,6 +77,7 @@ if __name__ == '__main__':
     root = r"C:\Users\dkdkm\Documents\GitHub\MillionSongSubset"
 
     database = {}
+    nameList = []
 
     # Path to all HDF5 files
     pathList = []
@@ -119,35 +120,22 @@ if __name__ == '__main__':
 
         # save the database to a pickle file
         starttime = time.time()
-        with open(os.path.abspath(os.getcwd()) + r'\tmp\database' + str(i) +'.pickle', 'wb') as handle:
-            pickle.dump(database, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
+        with open(os.path.abspath(os.getcwd()) + r'\tmp\database' +str(i) + '.pickle', 'wb') as handle:
+            pickle.dump(database, handle)
+            handle.close()
+        print('Dump took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
         print()
+
+        nameList = nameList + list(database.keys())
 
         # remove database from memory
         del database
         gc.collect()
         database = {}
-
-    # starttime = time.time()
-
-    # batch = 4
-    # i = 0
-    # result_queue = mp.Queue()
-
-    # while i < len(pathList):
-    #     print(i)
-    #     processes = []
-
-    #     j = i+batch
-    #     while i < j:
-    #         p = mp.Process(target=getFeatures, args=(
-    #             pathList[i], result_queue))
-    #         processes.append(p)
-    #         p.start()
-    #         i += 1
-
-    #     for process in processes:
-    #         process.join()
-    #     results = [result_queue.get() for i in range(batch)]
-    # print('That took {} seconds'.format(time.time() - starttime))
+    
+    # save the namelist to a pickle file
+    starttime = time.time()
+    with open(os.path.abspath(os.getcwd()) + r'\tmp\namelist.pickle', 'wb') as handle:
+        pickle.dump(nameList, handle)
+        handle.close()
+    print('namelist took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
