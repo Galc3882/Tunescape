@@ -5,6 +5,8 @@ REQUEST_URL = 'https://api.spotify.com/v1/audio-analysis/'
 CLIENT_ID = 'd513b538756244beaabe189f5ba75be1'
 CLIENT_SECRET = '943e6dab04c34d78a05752b515e3fb2a'
 
+# FEATURES_URL = 'https://api.spotify.com/v1/audio-features'
+
 # r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))
 '''
 r = requests.get('https://api.spotify.com/v1/audio-analysis/id', auth=('d513b538756244beaabe189f5ba75be1', '943e6dab04c34d78a05752b515e3fb2a'))
