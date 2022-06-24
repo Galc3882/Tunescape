@@ -5,6 +5,9 @@ import multiprocessing as mp
 import time
 import pickle
 import cv2
+import gc
+import datetime
+import os
 
 
 def getFeatures(hdf5_file):
@@ -46,15 +49,17 @@ def getFeatures(hdf5_file):
 
     # Create a dataframe with the features
     cropped_values = []
+    batchSize = 64
+
     for getter in cropped_getters:
         res = hdf5_getters.__getattribute__(getter)(h5, 0)
 
         if getter == 'get_segments_pitches' or getter == 'get_segments_timbre':
-            if len(res) > 128:
-                res = cv2.resize(res, dsize=(12, 128), interpolation=cv2.INTER_CUBIC)
+            if len(res) > batchSize:
+                res = cv2.resize(res, dsize=(12, batchSize), interpolation=cv2.INTER_CUBIC)
         elif getter == 'get_sections_start' or getter == 'get_bars_start' or getter == 'get_beats_start' or getter == 'get_tatums_start':
-            if len(res) > 128:
-                res = np.resize(res, 128)
+            if len(res) > batchSize:
+                res = np.array([i.item() for i in cv2.resize(res, dsize=(1, batchSize), interpolation=cv2.INTER_NEAREST)])
 
 
         # if type is bytes, convert to string
@@ -72,6 +77,7 @@ if __name__ == '__main__':
     root = r"C:\Users\dkdkm\Documents\GitHub\MillionSongSubset"
 
     database = {}
+    nameList = []
 
     # Path to all HDF5 files
     pathList = []
@@ -79,55 +85,57 @@ if __name__ == '__main__':
         for name in files:
             pathList.append(os.path.join(path, name))
 
-    # multiprocessing to speed up the process of getting features from all the files
-    starttime = time.time()
-    pool = mp.Pool()
-    result = pool.imap_unordered(getFeatures, pathList)
+    # split the list into chunks of 5000
+    chunkSize = 5000
+    chunks = [pathList[i:i+chunkSize] for i in range(0, len(pathList), chunkSize)]
 
-    lastIndex = 0
-    while result._length == None:
-        i = result._index
-        if i >= lastIndex + 500:
-            lastIndex = i
-            print("Songs processed: " + str(i) + "\t|\t " + str(int(i*100/len(pathList))
-                                                                ) + "%\t|\t Time: {:.2f}".format(time.time() - starttime))
+    for i, chunk in enumerate(chunks):
+        print("Processing chunk {} of {}".format(i+1, len(chunks)))
 
-    for features in result:
-        # add each song to the database with key as the title + artist delimited by "\0"
-        database[features[0]+"\0"+features[1]] = features
-    pool.close()
-    print('That took {:.2f} seconds'.format(time.time() - starttime))
+        # multiprocessing to speed up the process of getting features from all the files
+        starttime = time.time()
+        pool = mp.Pool()
+        result = pool.imap_unordered(getFeatures, chunk)
+
+        lastIndex = 0
+        while result._length == None:
+            j = result._index
+            if j >= lastIndex + 500:
+                lastIndex = j
+                print("Songs processed: " + str(j) + "\t|\t " + str(int(j*100/len(chunk))
+                                                                    ) + "%\t|\t Time: " + str(datetime.timedelta(seconds=time.time() - starttime)))
+
+        for features in result:
+            # add each song to the database with key as the title + artist delimited by "\0"
+            database[features[0]+"\0"+features[1]] = features
+        pool.close()
+        print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
+        
+        # remove songs with no features
+        lr = ['Black Market Hell\0Aiden', 'Genuine\0Five Fingers of Funk', 'bereit\0Panzer AG']
+        for key in lr:
+            if key in database:
+                database.pop(key)
+                lr.remove(key)
+
+        # save the database to a pickle file
+        starttime = time.time()
+        with open(os.path.abspath(os.getcwd()) + r'\tmp\database' +str(i) + '.pickle', 'wb') as handle:
+            pickle.dump(database, handle)
+            handle.close()
+        print('Dump took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
+        print()
+
+        nameList = nameList + list(database.keys())
+
+        # remove database from memory
+        del database
+        gc.collect()
+        database = {}
     
-    # remove songs with no features
-    database.pop('Black Market Hell\0Aiden')
-    database.pop('Genuine\0Five Fingers of Funk')
-    database.pop('bereit\0Panzer AG')
-
-    # save the database to a pickle file
+    # save the namelist to a pickle file
     starttime = time.time()
-    with open('database.pickle', 'wb') as handle:
-        pickle.dump(database, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    print('That took {:.2f} seconds'.format(time.time() - starttime))
-
-    # starttime = time.time()
-
-    # batch = 4
-    # i = 0
-    # result_queue = mp.Queue()
-
-    # while i < len(pathList):
-    #     print(i)
-    #     processes = []
-
-    #     j = i+batch
-    #     while i < j:
-    #         p = mp.Process(target=getFeatures, args=(
-    #             pathList[i], result_queue))
-    #         processes.append(p)
-    #         p.start()
-    #         i += 1
-
-    #     for process in processes:
-    #         process.join()
-    #     results = [result_queue.get() for i in range(batch)]
-    # print('That took {} seconds'.format(time.time() - starttime))
+    with open(os.path.abspath(os.getcwd()) + r'\tmp\namelist.pickle', 'wb') as handle:
+        pickle.dump(nameList, handle)
+        handle.close()
+    print('namelist took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
