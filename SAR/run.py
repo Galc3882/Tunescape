@@ -21,12 +21,13 @@ def main1():
         for j in range(len(songKey)):
             print(str(j+1)+". "+songKey[j][0].split('\0')
                   [0]+" by " + songKey[j][0].split('\0')[1])
-        k = input("Please enter the number of the song you want to use: ")
-        songKey = songKey[int(k)-1][0]
-    else:
-        songKey = songKey[0][0]
-    print("Found Song: " + songKey.split('\0')
-          [0]+" by " + songKey.split('\0')[1])
+            songKey[j] = songKey[j][0]
+        # k = input("Please enter the number of the song you want to use: ")
+        # songKey = songKey[int(k)-1][0]
+    # else:
+    #     songKey = songKey[0][0]
+    # print("Found Song: " + songKey.split('\0')
+    #       [0]+" by " + songKey.split('\0')[1])
 
     root = os.path.abspath(os.getcwd()) + r'\tmp'
     pathList = []
@@ -35,42 +36,30 @@ def main1():
             if not name.startswith("namelist"):
                 pathList.append(os.path.join(path, name))
 
-    songValue = None
+    songValues = []
     # Find song value in the database
     for path in pathList:
         with open(path, 'rb') as handle:
             data = pickle.load(handle)
             handle.close()
-            if songKey in data.keys():
-                songValue = data[songKey]
-                break
+            for song in songKey:
+                if song in data.keys():
+                    songValues.append(data[song])
         del data
         gc.collect()
-    if len(pathList) > 0:
-        del data
-        gc.collect()
-    if songValue == None:
-        pass  # ! Error: Song not found
+    if songValues == None:
+        pass
     
     print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
 
-
-    # Find most similar song using cosine similarity
     numOfSongs = 5
-    similarSongs = Search.multiProcessing(
-        Search.findSimilarSongs, 32, songValue, pathList, numOfSongs)
-
-    # Sort the list by the similarity score
-    sortedSimilarSongs = sorted(
-        similarSongs, key=Search.takeSecond, reverse=True)
-    if len(sortedSimilarSongs) > numOfSongs:
-        sortedSimilarSongs = sortedSimilarSongs[:numOfSongs]
-
+    similarSongs = Search.reduceSongs(songValues, pathList, numOfSongs)
+    
     print("Similar Songs: ")
-    for i in range(len(sortedSimilarSongs)):
-        print("Found Song: " + sortedSimilarSongs[i][0].split('\0')
-              [0]+" by " + sortedSimilarSongs[i][0].split('\0')[1])
-        print("Cosine Similarity: " + str(sortedSimilarSongs[i][1]))
+    for i in range(len(similarSongs)):
+        print("Found Song: " + similarSongs[i][0].split('\0')
+              [0]+" by " + similarSongs[i][0].split('\0')[1])
+        print("Cosine Similarity: " + str(similarSongs[i][1]))
     print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
 
 
