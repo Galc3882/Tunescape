@@ -110,7 +110,7 @@ def year(year1, year2):
     '''
     This function takes two years and returns the similarity between them.
     '''
-    if year1 == 0 or year2 == 0:
+    if year1 < 1800 or year2 < 1800:
         return None
     return max(1-0.1*abs(int(year1) - int(year2)), 0)
 

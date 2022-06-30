@@ -64,8 +64,9 @@ def findSimilarSongs(song, paths, numOfSongs=1, excludeSongs=[], q=None):
         for row in data.items():
             # Add the song to the list of songs if cosine similarity is above numOfSongs lowest similarity and delete the lowest similarity
             cosSim = cosineSimilarity(song, row[1])
-            if cosSim < 0.4:
-                continue
+            # print(cosSim)
+            # if cosSim < 0.4:
+            #     continue
             if len(similarSongs) < numOfSongs:
                 similarSongs.append((row[0], cosSim))
             else:
