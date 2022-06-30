@@ -53,7 +53,7 @@ def findSimilarSongs(song, paths, numOfSongs=1, excludeSongs=[], q=None):
         for key in excludeSongs:
             if key in data:
                 data.pop(key)
-                excludeSongs.remove(key)
+                # excludeSongs.remove(key)
 
         # Cap the number of songs to be returned
         if numOfSongs > len(data):
