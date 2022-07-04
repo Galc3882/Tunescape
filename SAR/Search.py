@@ -197,7 +197,7 @@ def reduceSongs(songList, pathList, numOfSongs):
 
 
     # Use k means clustering to reduce the number of songs
-    kmeans = KMeans(n_clusters=min(int(len(songList)/7)+1, 4), max_iter=10000, n_init = 20).fit(kmeansList)
+    kmeans = KMeans(n_clusters=min(int(len(songList)/5)+1, 4), max_iter=10000, n_init = 20).fit(kmeansList)
     centroids = kmeans.cluster_centers_
 
     for i in range(len(centroids)):
