@@ -60,7 +60,8 @@ def search(track_name, sp, debug=False):
 def get_features(track_id, sp, debug=False):
     '''Returns an array with the features of a track
     The features returned are:
-    0: Key, 1: Mode, 2: Tempo, 3: Loudness, 4: Time-Signature, 5: Section Starts, 6: Segment Pitches, 7: Segment Timbre, 8: Bars Start, 9: Beats Start 10: Tatums Start'''
+    0: Duration, 1: Key, 2: Mode, 3: Tempo, 4: Loudness, 5: Time-Signature, 6: Year, 7: Section Starts, 8: Segment Pitches, 9: Segment Timbre, 10: Bars Start, 11: Beats Start 12: Tatums Start'''
+    # 0: Track Name, 1: Artist Name, 2: Duration, 3: Key, 4 Mode, 5: Tempo, 6: Loudness, 7: Time-Signature, 8: Year 9: Section Starts, 10: Segment Pitches, 11: Segment Timbre, 12: Bars Start, 13: Beats Start 14: Tatums Start
     # TODO: What do we actually do with sections start?
     get_audio_features = sp.audio_features(track_id)
     get_audio_analysis = sp.audio_analysis(track_id)
@@ -82,11 +83,16 @@ def get_features(track_id, sp, debug=False):
         # print("DEBUG SECTIONS:", {key: [i[key] for i in get_audio_analysis['segments']] for key in get_audio_analysis['segments'][0]})
         print("DEBUG SEGMENT TIMBRE'S:", [i['timbre']
               for i in get_audio_analysis['segments']])
+        print(get_audio_features[0].keys())
+    #track = get_audio_features[0]['track_name']
+    #artist = get_audio_features[0]['artist_name']
+    duration = get_audio_features[0]['duration_ms']
     key = get_audio_features[0]['key']
     mode = get_audio_features[0]['mode']
     tempo = get_audio_features[0]['tempo']
     loudness = get_audio_features[0]['loudness']
     time_signature = get_audio_features[0]['time_signature']
+    year = 0
     # TODO: Add Year
     # TODO: Switch Oder
     '''section_starts = get_audio_analysis['sections'][0]['start']
@@ -103,17 +109,19 @@ def get_features(track_id, sp, debug=False):
     beats_start = [i['start']for i in get_audio_analysis['beats']]
     tatums_start = [i['start']for i in get_audio_analysis['tatums']]
 
-    result = [key, mode, tempo, loudness, time_signature, section_starts,
+    result = [duration, key, mode, tempo, loudness, time_signature, year, section_starts,
               segment_pitches, segment_timbre, bars_start, beats_start, tatums_start]
     return result
 
 
 if __name__ == "__main__":
     sp = authentiated_spotipy()
-    tracks = search("Eine Kleine Nachtmusik", sp)
+    tracks = search("Sweet Caroline", sp)
     print(tracks[0])
+    start_time = time.time()
     features = get_features(tracks[0][8], sp)
-    print(len(features[7]), len(features[7][0]))
+    print("Time Elapsed:", time.time()-start_time)
+    print(len(features[8]), len(features[8][0]))
 
 # TODO: Ceck out the following API fucntons on https://spotipy.readthedocs.io/en/master/#api-reference:
 '''
