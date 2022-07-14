@@ -5,36 +5,33 @@ import debug
 import os
 import datetime
 import time
+import Spotify_Search_v4
 
 
 def main1():
     starttime = time.time()
+    # sp = Spotify_Search_v4.authentiated_spotipy()
 
-    # Ask for the song title
-    songTitle = input("Enter the song title: ")
+    # # Ask for the song title
+    # songTitle = input("Enter the song title: ")
 
-    # Find the song in the database
-    songKey = Search.fuzzyGetSongTitle(songTitle, os.path.abspath(os.getcwd()) + r'\tmp\namelist.pickle', 40)
+    # # Find the song in spotify
+    # songKey = Spotify_Search_v4.search(songTitle, sp)
 
-    if len(songKey) > 1:
-        print("Multiple songs found:")
-        for j in range(len(songKey)):
-            print(str(j+1)+". "+songKey[j][0].split('\0')
-                  [0]+" by " + songKey[j][0].split('\0')[1])
-            songKey[j] = songKey[j][0]
-        # k = input("Please enter the number of the song you want to use: ")
-        # songKey = songKey[int(k)-1][0]
+    # if len(songKey) > 1:
+    #     print("Multiple songs found:")
+    #     for j in range(len(songKey)):
+    #         print(str(j+1)+". "+songKey[j][0]+" by " + songKey[j][1])
+    #     k = input("Please enter the number of the song you want to use: ")
+    songKey = ['My Love\0Justin Timberlake Featuring T.I.'] #songKey[int(k)-1][0]+"\0"+songKey[int(k)-1][1]
     # else:
-    #     songKey = songKey[0][0]
-    # print("Found Song: " + songKey.split('\0')
-    #       [0]+" by " + songKey.split('\0')[1])
+    #     print(str(j+1)+". "+songKey[0][0]+" by " + songKey[0][1])
 
-    root = os.path.abspath(os.getcwd()) + r'\tmp'
+    root = r"C:\Users\dkdkm\Documents\GitHub\database"
     pathList = []
     for path, subdirs, files in os.walk(root):
         for name in files:
-            if not name.startswith("namelist"):
-                pathList.append(os.path.join(path, name))
+            pathList.append(os.path.join(path, name))
 
     songValues = []
     # Find song value in the database
@@ -45,15 +42,24 @@ def main1():
             for song in songKey:
                 if song in data.keys():
                     songValues.append(data[song])
+                    if len(songValues) == len(songKey):
+                        break
+            if len(songValues) == len(songKey):
+                del data
+                gc.collect()
+                break
         del data
         gc.collect()
-    if songValues == None:
-        pass
+
+    if songValues == []:
+        print("No songs found in the database")
+        return
     
     print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
 
     numOfSongs = 5
     similarSongs = Search.reduceSongs(songValues, pathList, numOfSongs)
+    similarSongs = similarSongs[:20]
     
     print("Similar Songs: ")
     for i in range(len(similarSongs)):
@@ -66,15 +72,14 @@ def main1():
 def main2():
     # Read from the pickle file
 
-    songKey1 = "Sympathy\0Thomas Battenstein"
-    songKey2 = "Levallois Monte Carlo\0Georges Parys"
+    songKey1 = "Love On A Mountain Top\x00Sinitta"
+    songKey2 = "Reso Rafter\x00Jark Prongo"
 
-    root = os.path.abspath(os.getcwd()) + r'\tmp'
+    root = r"C:\Users\dkdkm\Documents\GitHub\database"
     pathList = []
     for path, subdirs, files in os.walk(root):
         for name in files:
-            if not name.startswith("namelist"):
-                pathList.append(os.path.join(path, name))
+            pathList.append(os.path.join(path, name))
 
     songValue1 = None
     songValue2 = None
@@ -91,10 +96,9 @@ def main2():
                 songValue2 = data[songKey2]
                 i+=1
             if i == 2:
+                del data
+                gc.collect()
                 break
-        del data
-        gc.collect()
-    if len(pathList) > 0:
         del data
         gc.collect()
 

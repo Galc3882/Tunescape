@@ -44,11 +44,20 @@ def findSimilarSongs(song, paths, numOfSongs=1, excludeSongs=[], q=None):
     Finds the most similar songs to the song at the index.
     Returns the most similar songs using cosine similarity.
     """
-
+    # for every 5 paths instead of 1
+    batch = 5
+    if len(paths) > batch:
+        # Split the pathList into list of batch sized lists
+        paths = np.array_split(paths, int(len(paths)/batch))
+    else:
+        paths = [paths]
+    
     for path in paths:
-        with open(path, 'rb') as handle:
-            data = pickle.load(handle)
-            handle.close()
+        data = {}
+        for p in path:
+            with open(p, 'rb') as handle:
+                data.update(pickle.load(handle))
+                handle.close()
 
         for key in excludeSongs:
             if key in data:
@@ -70,7 +79,10 @@ def findSimilarSongs(song, paths, numOfSongs=1, excludeSongs=[], q=None):
             if len(similarSongs) < numOfSongs:
                 similarSongs.append((row[0], cosSim))
             else:
-                iMin = similarSongs.index(min(similarSongs, key=takeSecond))
+                smin = min(similarSongs, key=takeSecond)
+                if smin[1] > 0.8 and len(similarSongs) < numOfSongs:
+                    break
+                iMin = similarSongs.index(smin)
                 if cosSim > similarSongs[iMin][1]:
                     similarSongs.append((row[0], cosSim))
                     if len(similarSongs) > numOfSongs:
@@ -94,7 +106,7 @@ def cosineSimilarity(song1, song2):
 
     # Vector of weights for each feature
     weights = np.array([0.05, 1, 1, 0.65, 0.5,
-                       0.8, 0.2, 0.65, 0.15, 0.15, 0.15])
+                       0.85, 0.4, 0.65, 0.15, 0.15, 0.15])
 
     # Calculate the dot product of the two songs
     similarities = np.array([0.0]*weights.size)
@@ -103,28 +115,28 @@ def cosineSimilarity(song1, song2):
         if i == 3:
             similarity = FeatureSimilarity.methodDictionary[i](
                 song1[i], song2[i], song1[i+1], song2[i+1])
-            if similarity < 0.5:
+            if similarity < 0.68:
                 return 0
         elif i == 5:
             similarity = FeatureSimilarity.methodDictionary[i](
                 song1[i], song2[i], song1[i+2], song2[i+2])
             if similarity < 0.5:
                 return 0
-        # elif i == 9 or i == 10 or i == 11:
-        #     similarity = FeatureSimilarity.methodDictionary[i](
-        #         song1[i], song2[i])
-        #     if similarity < 0.3:
-        #         return 0
         else:
             similarity = FeatureSimilarity.methodDictionary[i](
                 song1[i], song2[i])
         if similarity is not None:
+            if similarity < 0.05:
+                return 0
             if i == 9 and np.sum(similarities) < 3:
                 return 0
             similarities[j] = similarity
         else:
             weights[j] = 0
         j += 1
+    
+    # if 0 not in similarities:
+    #     print(similarities)
 
     # Return dot product of weights and similarities
     return np.dot(weights, similarities)/np.sum(weights)
@@ -133,15 +145,17 @@ def multiProcessing(func, batch, song, excludeSongs, pathList, n):
     """
     Multi-processing function.
     """
+    # randomise the order of the paths
+    np.random.shuffle(pathList)
+
+    pathList = pathList[:20]
 
     if len(pathList) > batch:
         # Split the pathList into list of batch sized lists
-        pathList = np.array_split(pathList, 4)
+        pathList = np.array_split(pathList, batch)
     else:
         pathList = [pathList]
         
-
-
     songList = []
     i = 0
     resultQueue = mp.Queue()
@@ -218,7 +232,7 @@ def reduceSongs(songList, pathList, numOfSongs):
 
     similarSongs = []
     for song in reducedSongList:
-        similarSongs += (multiProcessing(Search.findSimilarSongs, 32, song, excludeSongs, pathList, numOfSongs))
+        similarSongs += (multiProcessing(Search.findSimilarSongs, 8, song, excludeSongs, pathList, numOfSongs))
 
     # remove duplicates
     similarSongs = list(dict.fromkeys(similarSongs))

@@ -38,13 +38,12 @@ def getFeatures(hdf5_file):
        'get_track_7digitalid', 'get_track_id', 'get_year']
     """
 
-    cropped_getters = ('get_title', 'get_artist_name', 'get_duration', 'get_key', 
-                       'get_mode', 'get_tempo', 'get_loudness', 'get_time_signature', 
-                       'get_year', 'get_sections_start', 'get_segments_pitches', 
+    cropped_getters = ('get_title', 'get_artist_name', 'get_duration', 'get_key',
+                       'get_mode', 'get_tempo', 'get_loudness', 'get_time_signature',
+                       'get_year', 'get_sections_start', 'get_segments_pitches',
                        'get_segments_timbre', 'get_bars_start', 'get_beats_start',
                        'get_tatums_start')
 
-    
     h5 = hdf5_getters.open_h5_file_read(hdf5_file)
 
     # Create a dataframe with the features
@@ -56,11 +55,12 @@ def getFeatures(hdf5_file):
 
         if getter == 'get_segments_pitches' or getter == 'get_segments_timbre':
             if len(res) > batchSize:
-                res = cv2.resize(res, dsize=(12, batchSize), interpolation=cv2.INTER_CUBIC)
+                res = cv2.resize(res, dsize=(12, batchSize),
+                                 interpolation=cv2.INTER_CUBIC)
         elif getter == 'get_sections_start' or getter == 'get_bars_start' or getter == 'get_beats_start' or getter == 'get_tatums_start':
             if len(res) > batchSize:
-                res = np.array([i.item() for i in cv2.resize(res, dsize=(1, batchSize), interpolation=cv2.INTER_NEAREST)])
-
+                res = np.array([i.item() for i in cv2.resize(
+                    res, dsize=(1, batchSize), interpolation=cv2.INTER_NEAREST)])
 
         # if type is bytes, convert to string
         if type(res) == np.bytes_:
@@ -74,20 +74,23 @@ def getFeatures(hdf5_file):
 
 if __name__ == '__main__':
     # Path to the Million Song Dataset
-    root = r"C:\Users\dkdkm\Documents\GitHub\MillionSongSubset"
+    root = r"D:\MSD\MillionSongDataset\data"
 
     database = {}
-    nameList = []
 
     # Path to all HDF5 files
     pathList = []
     for path, subdirs, files in os.walk(root):
         for name in files:
-            pathList.append(os.path.join(path, name))
+            if not name.endswith('.DS_Store'):
+                if len(pathList)%1000 == 0:
+                    print("Found "+str(len(pathList))+ " files and searching... ")
+                pathList.append(os.path.join(path, name))
 
     # split the list into chunks of 5000
     chunkSize = 5000
-    chunks = [pathList[i:i+chunkSize] for i in range(0, len(pathList), chunkSize)]
+    chunks = [pathList[i:i+chunkSize]
+              for i in range(0, len(pathList), chunkSize)]
 
     for i, chunk in enumerate(chunks):
         print("Processing chunk {} of {}".format(i+1, len(chunks)))
@@ -110,9 +113,10 @@ if __name__ == '__main__':
             database[features[0]+"\0"+features[1]] = features
         pool.close()
         print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
-        
+
         # remove songs with no features
-        lr = ['Black Market Hell\0Aiden', 'Genuine\0Five Fingers of Funk', 'bereit\0Panzer AG']
+        lr = ['Black Market Hell\0Aiden',
+              'Genuine\0Five Fingers of Funk', 'bereit\0Panzer AG']
         for key in lr:
             if key in database:
                 database.pop(key)
@@ -120,22 +124,13 @@ if __name__ == '__main__':
 
         # save the database to a pickle file
         starttime = time.time()
-        with open(os.path.abspath(os.getcwd()) + r'\tmp\database' +str(i) + '.pickle', 'wb') as handle:
+        with open(r'C:\Users\dkdkm\Documents\GitHub\database\database'+str(i) + '.pickle', 'wb') as handle:
             pickle.dump(database, handle)
             handle.close()
         print('Dump took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
         print()
 
-        nameList = nameList + list(database.keys())
-
         # remove database from memory
         del database
         gc.collect()
         database = {}
-    
-    # save the namelist to a pickle file
-    starttime = time.time()
-    with open(os.path.abspath(os.getcwd()) + r'\tmp\namelist.pickle', 'wb') as handle:
-        pickle.dump(nameList, handle)
-        handle.close()
-    print('namelist took ' + str(datetime.timedelta(seconds=time.time() - starttime)))

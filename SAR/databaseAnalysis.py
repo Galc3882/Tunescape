@@ -1,3 +1,5 @@
+from os.path import basename
+from zipfile import ZipFile
 import ujson
 import json
 import os
@@ -15,17 +17,41 @@ class MyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 if __name__=='__main__':
-    starttime = time.time()
-    with open(os.path.abspath(os.getcwd()) + r'\tmp\database0.json', 'r') as f:
-        database = ujson.load(f)
-        f.close()
-    print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
+
+    root = r"C:\Users\dkdkm\Documents\GitHub\database"
+    pathList = []
+    for path, subdirs, files in os.walk(root):
+        for name in files:
+            pathList.append(os.path.join(path, name))
+
+    with ZipFile("D:\MSD\db\db.zip", 'w') as zipObj:
+        for path in pathList:
+            zipObj.write(path, basename(path))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # starttime = time.time()
+    # with open(os.path.abspath(os.getcwd()) + r'\tmp\database0.json', 'r') as f:
+    #     database = ujson.load(f)
+    #     f.close()
+    # print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
     
-    starttime = time.time()
-    with open(os.path.abspath(os.getcwd()) + r'\tmp\database0.pickle', 'rb') as f:
-        database = pickle.load(f)
-        f.close()
-    print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
+    # starttime = time.time()
+    # with open(os.path.abspath(os.getcwd()) + r'\tmp\database0.pickle', 'rb') as f:
+    #     database = pickle.load(f)
+    #     f.close()
+    # print('That took ' + str(datetime.timedelta(seconds=time.time() - starttime)))
 
     
     

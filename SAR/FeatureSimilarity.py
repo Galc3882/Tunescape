@@ -53,15 +53,7 @@ def equalizeDim(l1, l2):
 @nb.jit(nopython=True, fastmath=True)
 def nb_cosine(x, y):
     m = max(np.max(x), np.max(y)) - min(np.min(x), np.min(y))
-    return max(1-0.01*abs(np.sum((x/len(x)*m)-(y/len(x)*m))), 0)
-    # xx, yy, xy = 0.0, 0.0, 0.0
-    # for i in range(len(x)):
-    #     xx += x[i]*x[i]
-    #     yy += y[i]*y[i]
-    #     xy += x[i]*y[i]
-    # if xx*yy == 0:
-    #     return 0
-    # return xy/np.sqrt(xx*yy)
+    return max(1-abs(np.sum(x-y)/(len(x)*m)), 0)
 
 
 def key(key1, key2, mode1, mode2):
@@ -85,8 +77,7 @@ def speed(tempo1, tempo2, time_signature1, time_signature2):
     '''
     if tempo1 == tempo2 and time_signature1 == time_signature2:
         return 1
-    # sigmoid
-    return 1 / (1 + math.exp(-7*(max(1-0.03*abs(float(tempo1)/float(time_signature1) - float(tempo2)/float(time_signature2)), 0)-0.5)))
+    return max(1-0.03*abs(float(tempo1)/float(time_signature1) - float(tempo2)/float(time_signature2)), 0)
 
 
 def loudness(loudness1, loudness2):
@@ -148,7 +139,7 @@ def sections_start(sections_start1, sections_start2):
 
 def segments_pitches(segments_pitches1, segments_pitches2):
     '''
-    This function takes two segments pitches and returns the similarity between them.
+    This function takes two segment pitches and returns the similarity between them.
     '''
     # reshape matricies to smallest one
     if len(segments_pitches1) > len(segments_pitches2):
@@ -158,15 +149,18 @@ def segments_pitches(segments_pitches1, segments_pitches2):
         segments_pitches2 = cv2.resize(segments_pitches2, dsize=(
             12, len(segments_pitches1)), interpolation=cv2.INTER_NEAREST)
 
-    m = max(np.max(segments_pitches1), np.max(segments_pitches2)) - min(np.min(segments_pitches1), np.min(segments_pitches2))
+    m = max(segments_pitches1.max(), segments_pitches2.max()) - min(segments_pitches1.min(), segments_pitches2.min())
 
-    # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-7.5*(max(1-np.linalg.norm(segments_pitches1 - segments_pitches2)/len(segments_pitches1)*m, 0)-0.5)))
+    # if 1 / (1 + math.exp(-7.5*(max(1-0.1*np.linalg.norm(segments_pitches1 - segments_pitches2)/m, 0)-0.5))) > 0.1:
+    #     print(1 / (1 + math.exp(-7.5*(max(1-0.1*np.linalg.norm(segments_pitches1 - segments_pitches2)/m, 0)-0.5))))
+
+    # return euclidean distance between the two matrices
+    return max(1-0.1*np.linalg.norm(segments_pitches1 - segments_pitches2)/m, 0)
 
 
 def segments_timbre(segments_timbre1, segments_timbre2):
     '''
-    This function takes two segments timbre and returns the similarity between them.
+    This function takes two segment timbres and returns the similarity between them.
     '''
     # reshape matricies to smallest one
     if len(segments_timbre1) > len(segments_timbre2):
@@ -176,10 +170,13 @@ def segments_timbre(segments_timbre1, segments_timbre2):
         segments_timbre2 = cv2.resize(segments_timbre2, dsize=(
             12, len(segments_timbre1)), interpolation=cv2.INTER_NEAREST)
 
-    m = max(np.max(segments_timbre1), np.max(segments_timbre2)) - min(np.min(segments_timbre1), np.min(segments_timbre2))
+    m = max(segments_timbre1.max(), segments_timbre2.max()) - min(segments_timbre1.min(), segments_timbre2.min())
 
-    # return euclidean distance between the two matrices to sigmoid
-    return 1 / (1 + math.exp(-7.5*(max(1-0.0001*np.linalg.norm(segments_timbre1 - segments_timbre2)/len(segments_timbre1)*m, 0)-0.5)))
+    # if 1 / (1 + math.exp(-7.5*(max(1-0.1*np.linalg.norm(segments_timbre1 - segments_timbre2)/m, 0)-0.5))) > 0.1:
+    #     print(1 / (1 + math.exp(-7.5*(max(1-0.1*np.linalg.norm(segments_timbre1 - segments_timbre2)/m, 0)-0.5))))
+
+    # return euclidean distance between the two matrices
+    return max(1-0.1*np.linalg.norm(segments_timbre1 - segments_timbre2)/m, 0)
 
 
 def bars_start(bars_start1, bars_start2):
