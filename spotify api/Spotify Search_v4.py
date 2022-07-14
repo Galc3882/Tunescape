@@ -1,6 +1,7 @@
 import secrets
 import spotipy
 import time
+import numpy as np
 from datetime import timedelta
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -86,7 +87,7 @@ def get_features(track_id, sp, debug=False):
         print(get_audio_features[0].keys())
     #track = get_audio_features[0]['track_name']
     #artist = get_audio_features[0]['artist_name']
-    duration = get_audio_features[0]['duration_ms']
+    duration = get_audio_features[0]['duration_ms']/1000
     key = get_audio_features[0]['key']
     mode = get_audio_features[0]['mode']
     tempo = get_audio_features[0]['tempo']
@@ -109,8 +110,8 @@ def get_features(track_id, sp, debug=False):
     beats_start = [i['start']for i in get_audio_analysis['beats']]
     tatums_start = [i['start']for i in get_audio_analysis['tatums']]
 
-    result = [duration, key, mode, tempo, loudness, time_signature, year, section_starts,
-              segment_pitches, segment_timbre, bars_start, beats_start, tatums_start]
+    result = np.array([duration, key, mode, tempo, loudness, time_signature, year, section_starts,
+                       segment_pitches, segment_timbre, bars_start, beats_start, tatums_start])
     return result
 
 
