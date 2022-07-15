@@ -117,8 +117,8 @@ def get_features(track_id, sp, debug=False):
     beats_start = np.array([i['start']for i in get_audio_analysis['beats']])
     tatums_start = np.array([i['start']for i in get_audio_analysis['tatums']])
 
-    result = np.array([duration, key, mode, tempo, loudness, time_signature, year, section_starts,
-                       segment_pitches, segment_timbre, bars_start, beats_start, tatums_start])
+    result = [duration, key, mode, tempo, loudness, time_signature, year, section_starts,
+              segment_pitches, segment_timbre, bars_start, beats_start, tatums_start]
     return result
 
 
