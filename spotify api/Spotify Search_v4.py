@@ -5,6 +5,10 @@ import numpy as np
 from datetime import timedelta
 from spotipy.oauth2 import SpotifyClientCredentials
 
+# TODO: CONVERT TO NUMPY ARRAY MORE EFFICIENTLY
+# TODO: HAVE GET_FEATURES TAKE MULTIPLE TRACKS
+# TODO: ADD OTHER FEATURES
+
 
 def authentiated_spotipy():
     '''Returns an authentiated Spotipy Instance'''
@@ -103,12 +107,15 @@ def get_features(track_id, sp, debug=False):
     beats_start = get_audio_analysis['beats'][0]['start']
     tatums_start = get_audio_analysis['tatums'][0]['start']'''
 
-    section_starts = [i['start']for i in get_audio_analysis['sections']]
-    segment_pitches = [i['pitches']for i in get_audio_analysis['segments']]
-    segment_timbre = [i['timbre']for i in get_audio_analysis['segments']]
-    bars_start = [i['start']for i in get_audio_analysis['bars']]
-    beats_start = [i['start']for i in get_audio_analysis['beats']]
-    tatums_start = [i['start']for i in get_audio_analysis['tatums']]
+    section_starts = np.array([i['start']
+                              for i in get_audio_analysis['sections']])
+    segment_pitches = np.array([i['pitches']
+                               for i in get_audio_analysis['segments']])
+    segment_timbre = np.array([i['timbre']
+                              for i in get_audio_analysis['segments']])
+    bars_start = np.array([i['start']for i in get_audio_analysis['bars']])
+    beats_start = np.array([i['start']for i in get_audio_analysis['beats']])
+    tatums_start = np.array([i['start']for i in get_audio_analysis['tatums']])
 
     result = np.array([duration, key, mode, tempo, loudness, time_signature, year, section_starts,
                        segment_pitches, segment_timbre, bars_start, beats_start, tatums_start])
@@ -123,6 +130,7 @@ if __name__ == "__main__":
     features = get_features(tracks[0][8], sp)
     print("Time Elapsed:", time.time()-start_time)
     print(len(features[8]), len(features[8][0]))
+    # print(type(features[8][0]))
 
 # TODO: Ceck out the following API fucntons on https://spotipy.readthedocs.io/en/master/#api-reference:
 '''
