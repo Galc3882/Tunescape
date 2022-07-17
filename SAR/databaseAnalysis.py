@@ -8,25 +8,26 @@ import numpy as np
 import time
 import datetime
 
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, np.int32):
-            return int(obj)
-        return json.JSONEncoder.default(self, obj)
+# class MyEncoder(json.JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, np.ndarray):
+#             return obj.tolist()
+#         elif isinstance(obj, np.int32):
+#             return int(obj)
+#         return json.JSONEncoder.default(self, obj)
 
 if __name__=='__main__':
+    pass
 
-    root = r"C:\Users\dkdkm\Documents\GitHub\database"
-    pathList = []
-    for path, subdirs, files in os.walk(root):
-        for name in files:
-            pathList.append(os.path.join(path, name))
+    # root = r"C:\Users\dkdkm\Documents\GitHub\database"
+    # pathList = []
+    # for path, subdirs, files in os.walk(root):
+    #     for name in files:
+    #         pathList.append(os.path.join(path, name))
 
-    with ZipFile("D:\MSD\db\db.zip", 'w') as zipObj:
-        for path in pathList:
-            zipObj.write(path, basename(path))
+    # with ZipFile("D:\MSD\db\db.zip", 'w') as zipObj:
+    #     for path in pathList:
+    #         zipObj.write(path, basename(path))
 
 
 

@@ -23,33 +23,20 @@ def main1():
     #     for j in range(len(songKey)):
     #         print(str(j+1)+". "+songKey[j][0]+" by " + songKey[j][1])
     #     k = input("Please enter the number of the song you want to use: ")
-    songKey = ['My Love\0Justin Timberlake Featuring T.I.'] #songKey[int(k)-1][0]+"\0"+songKey[int(k)-1][1]
+    songKey = ['Darts'+'\0'+'System Of A Down'+'\0'+'7vg47qMIEdLfNdTE3WLf0T'] #songKey[int(k)-1][0]+"\0"+songKey[int(k)-1][1]
     # else:
     #     print(str(j+1)+". "+songKey[0][0]+" by " + songKey[0][1])
+    # get everything after last \0
 
     root = r"C:\Users\dkdkm\Documents\GitHub\database"
     pathList = []
     for path, subdirs, files in os.walk(root):
         for name in files:
             pathList.append(os.path.join(path, name))
-
-    songValues = []
-    # Find song value in the database
-    for path in pathList:
-        with open(path, 'rb') as handle:
-            data = pickle.load(handle)
-            handle.close()
-            for song in songKey:
-                if song in data.keys():
-                    songValues.append(data[song])
-                    if len(songValues) == len(songKey):
-                        break
-            if len(songValues) == len(songKey):
-                del data
-                gc.collect()
-                break
-        del data
-        gc.collect()
+    
+    sp = Spotify_Search_v4.authentiated_spotipy()
+    songValues = [[key.split("\0")[0]]+[key.split("\0")[1]]+Spotify_Search_v4.get_features(key.split("\0")[2], sp) for key in songKey]
+    
 
     if songValues == []:
         print("No songs found in the database")
