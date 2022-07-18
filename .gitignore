@@ -4,3 +4,7 @@
 .vscode
 *.pyc
 SAR/__pycache__/FeatureSimilarity.cpython-38.pyc
+.cache
+*.pyc
+SAR/__pycache__/Search.cpython-38.pyc
+SAR/__pycache__/FeatureSimilarity.cpython-38.pyc
