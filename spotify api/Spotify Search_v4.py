@@ -100,7 +100,7 @@ def get_features(track_id, sp, debug=False):
         print(get_audio_features[0].keys())
     #track = get_audio_features[0]['track_name']
     #artist = get_audio_features[0]['artist_name']
-    duration = get_audio_features[0]['duration_ms']/1000
+    duration = int(get_audio_features[0]['duration_ms']/1000)
     key = get_audio_features[0]['key']
     mode = get_audio_features[0]['mode']
     tempo = get_audio_features[0]['tempo']
