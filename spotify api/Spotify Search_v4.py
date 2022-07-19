@@ -48,7 +48,16 @@ def search(track_name, sp, debug=False):
                 duration = duration[2:7]
         else:
             duration = duration[:7]
-        album_art = result['tracks']['items'][i]['album']['images'][2]['url']
+        if debug:
+            if len(result['tracks']['items'][i]['album']['images']) == 0:
+                print("DEBUG: ALBUM ART:",
+                      result['tracks']['items'][i]['album']['images'])
+                print("DEBUG: ID:", result['tracks']
+                      ['items'][i]['external_urls']['spotify'])
+        if len(result['tracks']['items'][i]['album']['images']) == 0:
+            album_art = "https://i.pinimg.com/originals/cb/68/7c/cb687c23588e2d441bedd63647a8f9bd.png"
+        else:
+            album_art = result['tracks']['items'][i]['album']['images'][2]['url']
         release_date = result['tracks']['items'][i]['album']['release_date']
         popularity = result['tracks']['items'][i]['popularity']
         explicit = result['tracks']['items'][i]['explicit']
@@ -124,7 +133,7 @@ def get_features(track_id, sp, debug=False):
 
 if __name__ == "__main__":
     sp = authentiated_spotipy()
-    tracks = search("Sweet Caroline", sp)
+    tracks = search("debussy ce qu'a vu le vent de l'ouest", sp, debug=True)
     print(tracks[0])
     start_time = time.time()
     features = get_features(tracks[0][8], sp)
