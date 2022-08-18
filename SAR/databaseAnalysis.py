@@ -1,6 +1,5 @@
 from os.path import basename
 from zipfile import ZipFile
-import ujson
 import json
 import os
 import pickle

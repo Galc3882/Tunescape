@@ -8,3 +8,4 @@ SAR/__pycache__/FeatureSimilarity.cpython-38.pyc
 *.pyc
 SAR/__pycache__/Search.cpython-38.pyc
 SAR/__pycache__/FeatureSimilarity.cpython-38.pyc
+.cache
