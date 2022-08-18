@@ -98,8 +98,8 @@ def get_features(track_id, sp, debug=False):
         print("DEBUG SEGMENT TIMBRE'S:", [i['timbre']
               for i in get_audio_analysis['segments']])
         print(get_audio_features[0].keys())
-    #track = get_audio_features[0]['track_name']
-    #artist = get_audio_features[0]['artist_name']
+    # track = get_audio_features[0]['track_name']
+    # artist = get_audio_features[0]['artist_name']
     duration = int(get_audio_features[0]['duration_ms']/1000)
     key = get_audio_features[0]['key']
     mode = get_audio_features[0]['mode']
@@ -133,13 +133,14 @@ def get_features(track_id, sp, debug=False):
 
 if __name__ == "__main__":
     sp = authentiated_spotipy()
-    tracks = search("debussy ce qu'a vu le vent de l'ouest", sp, debug=True)
+    tracks = search(
+        "Rock Island Line Lonnie Donnegan & his Skiffle Group", sp, debug=False)
     print(tracks[0])
     start_time = time.time()
     features = get_features(tracks[0][8], sp)
     print("Time Elapsed:", time.time()-start_time)
-    print(len(features[8]), len(features[8][0]))
-    # print(type(features[8][0]))
+    # print(len(features[8]), len(features[8][0]))
+    print(features[0][0][0])
 
 # TODO: Ceck out the following API fucntons on https://spotipy.readthedocs.io/en/master/#api-reference:
 '''
